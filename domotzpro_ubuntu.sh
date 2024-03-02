@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Set non-interactive mode for package configuration
+export DEBIAN_FRONTEND=noninteractive
+
 # Update and install key packages
 sudo apt update && sudo apt upgrade -y && sudo apt install -y net-tools openvswitch-switch
 
