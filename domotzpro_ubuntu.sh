@@ -83,11 +83,6 @@ step_message 8 "Removing openssh-server"
 progress_message "Purging openssh-server from system..."
 sudo apt purge -y openssh-server && sudo apt autoremove -y
 
-# Step 9
-step_message 9 "Cleaning system"
-progress_message "Cleaning command history..."
-history -c
-
 echo "------------------------------------------------------------"
 echo "   [+] Setup completed successfully!"
 echo "------------------------------------------------------------"
