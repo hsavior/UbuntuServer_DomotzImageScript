@@ -53,12 +53,12 @@ done
 
 # Step 5
 step_message 5 "Allowing port 3000 in UFW"
-progress_message "Allowing port 3000 in UFW..."
+progress_message "Creating firewall rule"
 sudo ufw allow 3000
 
 # Step 6
 step_message 6 "Configuring netplan for DHCP on attached NICs"
-progress_message "Configuring netplan for DHCP on attached NICs..."
+progress_message "Editing netplan configuration file..."
 sudo tee /etc/netplan/00-installer-config.yaml > /dev/null <<EOL
 network:
     version: 2
@@ -80,17 +80,17 @@ sudo netplan apply
 
 # Step 7
 step_message 7 "Resolving VPN on Demand issue"
-progress_message "Resolving VPN on Demand issue..."
+progress_message "Swaping resolv.conf file link..."
 sudo unlink /etc/resolv.conf
 sudo ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
 
 # Step 8
 step_message 8 "Removing openssh-server"
-progress_message "Purging openssh-server..."
+progress_message "Purging openssh-server from system..."
 sudo apt purge -y openssh-server && sudo apt autoremove -y
 
 # Step 9
-step_message 9 "Cleaning command history"
+step_message 9 "Cleaning system"
 progress_message "Cleaning command history..."
 history -c
 
