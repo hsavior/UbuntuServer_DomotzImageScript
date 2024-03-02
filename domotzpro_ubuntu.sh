@@ -30,7 +30,7 @@ sudo apt install -y net-tools openvswitch-switch
 step_message 2 "Loading tun module if not already loaded"
 progress_message "Loading 'tun' module..."
 sudo modprobe tun
-grep -qxF "tun" /etc/modules || echo "tun" >> /etc/modules
+sudo grep -qxF "tun" /etc/modules || sudo sh -c 'echo "tun" >> /etc/modules'
 
 # Step 3
 step_message 3 "Installing Domotz Pro agent via Snap Store"
