@@ -16,15 +16,15 @@ progress_message() {
 }
 
 # Step 1
-#step_message 1 "Updating and installing key packages"
-#progress_message "Updating package lists..."
-#sudo apt update
+step_message 1 "Updating and installing key packages"
+progress_message "Updating package lists..."
+sudo apt update
 
-#progress_message "Upgrading packages..."
-#sudo apt upgrade -y
+progress_message "Upgrading packages..."
+sudo apt upgrade -y
 
-#progress_message "Installing necessary packages..."
-#sudo apt install -y net-tools openvswitch-switch
+progress_message "Installing necessary packages..."
+sudo apt install -y net-tools openvswitch-switch
 
 # Step 2
 step_message 2 "Loading tun module if not already loaded"
