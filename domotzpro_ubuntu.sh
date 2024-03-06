@@ -2,7 +2,7 @@
 
 # Set non-interactive mode for package configuration and disables NEEDRESTART MESSAGES
 export DEBIAN_FRONTEND=noninteractive
-export NEEDRESTART_SUSPEND=y
+export NEEDRESTART_MODE=a
 # Function to display step messages
 step_message() {
     echo "------------------------------------------------------------"
