@@ -16,12 +16,12 @@ progress_message() {
 }
 
 # Step 1
-#step_message 1 "Updating and installing key packages"
-#progress_message "Updating package lists..."
-#sudo apt update
+step_message 1 "Updating and installing key packages"
+progress_message "Updating package lists..."
+sudo apt update
 
-#progress_message "Upgrading packages..."
-#sudo apt upgrade -y
+progress_message "Upgrading packages..."
+sudo apt upgrade -y
 
 progress_message "Installing necessary packages..."
 sudo apt install -y net-tools openvswitch-switch
@@ -51,26 +51,26 @@ progress_message "Creating firewall rule"
 sudo ufw allow 3000
 
 # Step 6
-#step_message 6 "Configuring netplan for DHCP on attached NICs"
-#progress_message "Editing netplan configuration file..."
-#sudo tee /etc/netplan/00-installer-config.yaml > /dev/null <<EOL
-#network:
-#    version: 2
-#    ethernets:
-#        all-en:
-#            match:
-#                name: "en*"
-#            dhcp4: true
-#            dhcp6: false
-#            accept-ra: false
-#        all-eth:
-#            match:
-#                name: "eth*"
-#            dhcp4: true
-#            dhcp6: false
-#            accept-ra: false
-#EOL
-#sudo netplan apply
+step_message 6 "Configuring netplan for DHCP on attached NICs"
+progress_message "Editing netplan configuration file..."
+sudo tee /etc/netplan/00-installer-config.yaml > /dev/null <<EOL
+network:
+    version: 2
+    ethernets:
+        all-en:
+            match:
+                name: "en*"
+            dhcp4: true
+            dhcp6: false
+            accept-ra: false
+        all-eth:
+            match:
+                name: "eth*"
+            dhcp4: true
+            dhcp6: false
+            accept-ra: false
+EOL
+sudo netplan apply
 
 # Step 7
 step_message 7 "Resolving VPN on Demand issue"
