@@ -11,13 +11,22 @@ echo "6. Configure netplan for DHCP on attached NICs"
 echo "7. Resolve VPN on Demand issue with DNS"
 echo "8. Disable cloud-init's network configuration"
 echo "------------------------------------------------------------"
-echo "Please confirm you understand and agree to these actions."
+echo "Disclaimer:"
+echo
+echo "1. Purpose: This script is designed for a fresh installation of Ubuntu Server 24.04."
+echo "2. By proceeding, you confirm that:"
+echo "   - The script will modify system configurations and install necessary packages."
+echo "   - It may update system files and settings as per its instructions."
+echo "   - Using this script on an already configured system may lead to unexpected behavior."
+echo "3. Responsibility: You are responsible for any consequences resulting from running this script."
+echo
 read -p "Type 'yes' to proceed: " confirmation1
 if [ "$confirmation1" != "yes" ]; then
     echo "Confirmation not received. Exiting script."
     exit 1
 fi
 echo "------------------------------------------------------------"
+
 echo "Please confirm again to proceed."
 read -p "Type 'yes' to proceed: " confirmation2
 if [ "$confirmation2" != "yes" ]; then
