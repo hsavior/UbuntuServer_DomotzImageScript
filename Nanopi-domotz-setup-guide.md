@@ -120,7 +120,11 @@ fine; Windows simply cannot read the board's Linux partitions.
 ### macOS
 
 1. Save the downloaded image in your Downloads folder.
-2. Open Terminal, then download the script and make it executable:
+2. Open Terminal. Find it in Applications, Utilities, Terminal, or press
+   Command and Space, type `Terminal` and press Enter.
+3. Copy and paste these three lines, one at a time, pressing Enter after each.
+   The first line moves you into your Downloads folder, which is where the
+   image is. The second downloads the script, and the third makes it runnable.
 
    ```
    cd ~/Downloads
@@ -128,7 +132,7 @@ fine; Windows simply cannot read the board's Linux partitions.
    chmod +x flash-nanopi-domotz.sh
    ```
 
-3. Insert the SD card, then list the available disks:
+4. Insert the SD card, then list the available disks:
 
    ```
    ./flash-nanopi-domotz.sh -l
@@ -137,22 +141,27 @@ fine; Windows simply cannot read the board's Linux partitions.
    Find your card in the list. It will show as external and physical, and the
    size will match your card. Note the identifier, something like `/dev/disk4`.
 
-4. Write the card, substituting your image name and disk identifier:
+5. Write the card, substituting your image name and disk identifier:
 
    ```
    ./flash-nanopi-domotz.sh -i rk3568-eflasher-ubuntu-noble-core-6.1-arm64-YYYYMMDD.img.gz -d /dev/disk4
    ```
 
-5. The script shows you what it found and asks you to type `yes` twice. Read
+6. The script shows you what it found and asks you to type `yes` twice. Read
    the disk details it prints before confirming. This is the one step that
    cannot be undone.
-6. Enter your password when prompted. Writing takes 5 to 15 minutes. Press
-   Ctrl-T at any time to see progress.
+7. Enter your Mac password when prompted. Nothing appears on screen as you
+   type it; that is normal. Press Enter when done.
+8. Writing takes 5 to 15 minutes. Press Ctrl-T at any time to see progress.
+
+Keep this Terminal window open for the whole process. If you close it and come
+back later, run `cd ~/Downloads` again before the other commands.
 
 ### Linux
 
 Identical to macOS, except the disk identifier looks like `/dev/sdb` or
-`/dev/mmcblk0`:
+`/dev/mmcblk0`. Open a terminal and run these in order. The first line moves
+you into your Downloads folder, where the image is:
 
 ```
 cd ~/Downloads
