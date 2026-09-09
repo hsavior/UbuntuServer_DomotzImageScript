@@ -3,7 +3,7 @@
 # setup-nanopi-domotz.sh
 #
 # Provisions a FriendlyELEC Rockchip board running a FriendlyELEC Ubuntu or
-# Debian arm64 image as a Domotz Pro collector.
+# Debian arm64 image as a Domotz Collector.
 #
 # Verified against: NanoPi R5S / R5C (RK3568), NanoPi R3S (RK3566)
 # Image family:     rk356x-XYZ-ubuntu-noble-core-6.1-arm64-YYYYMMDD.img
@@ -54,8 +54,8 @@ echo "2. Enable automatic security updates"
 echo "3. (Optional) Enable automatic reboot after kernel/security updates"
 echo "4. Load the 'tun' module if not already loaded"
 echo "5. Install and prepare snapd"
-echo "6. Install Domotz Pro agent via Snap Store"
-echo "7. Grant permissions to Domotz Pro agent"
+echo "6. Install the Domotz Collector via Snap Store"
+echo "7. Grant permissions to the Domotz Collector"
 echo "8. Allow port 3000 in UFW"
 echo "9. Configure DHCP on all attached NICs"
 echo "10. Resolve VPN on Demand issue with DNS"
@@ -190,14 +190,14 @@ fi
 progress_message "Waiting for snap seeding to finish (this can take a few minutes on first boot)..."
 sudo snap wait system seed.loaded
 
-step_message 6 "Installing Domotz Pro agent via Snap Store"
-progress_message "Installing Domotz Pro agent..."
+step_message 6 "Installing the Domotz Collector via Snap Store"
+progress_message "Installing the Domotz Collector..."
 sudo snap install domotzpro-agent-publicstore
 
-step_message 7 "Granting permissions to Domotz Pro agent"
+step_message 7 "Granting permissions to the Domotz Collector"
 permissions=("firewall-control" "network-observe" "raw-usb" "shutdown" "system-observe")
 for permission in "${permissions[@]}"; do
-    progress_message "Connecting Domotz Pro agent: $permission..."
+    progress_message "Connecting Domotz Collector: $permission..."
     sudo snap connect "domotzpro-agent-publicstore:$permission"
 done
 
@@ -391,7 +391,7 @@ fi
 
 echo "------------------------------------------------------------"
 echo "   [+] Setup completed successfully!"
-echo "   [+] Domotz agent web interface: http://$(hostname -I 2>/dev/null | awk '{print $1}'):3000"
+echo "   [+] Domotz Collector web interface: http://$(hostname -I 2>/dev/null | awk '{print $1}'):3000"
 echo "   [!] Reboot once and confirm the board comes back on the network"
 echo "       before leaving it unattended."
 if [ "$auto_reboot" != "yes" ]; then
