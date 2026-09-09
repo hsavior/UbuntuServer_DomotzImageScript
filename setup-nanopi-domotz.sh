@@ -229,7 +229,35 @@ network:
 EOL
     sudo chmod 600 /etc/netplan/00-installer-config.yaml
     sudo rm -f /etc/netplan/50-cloud-init.yaml
+
+    # netplan renders to systemd-networkd by default. On the FriendlyELEC
+    # images networkd is often installed but not enabled, so netplan apply
+    # warns that it is not running and hard-restarts it. That works for the
+    # session but leaves nothing bringing the network up at the next boot,
+    # which would strand a headless collector. Enable it explicitly.
+    # Test the exact word, not the exit status. "systemctl is-enabled" exits 0
+    # for "enabled-runtime" too, and that state lives in /run, which is wiped
+    # at every boot. netplan apply leaves networkd exactly like that, so a
+    # status check that trusts the exit code passes while the board is still
+    # one reboot away from having no network at all.
+    NETWORKD_STATE="$(systemctl is-enabled systemd-networkd 2>/dev/null || true)"
+    if [ "$NETWORKD_STATE" != "enabled" ]; then
+        progress_message "systemd-networkd is '$NETWORKD_STATE', enabling it persistently..."
+        sudo systemctl enable systemd-networkd
+    fi
+    sudo systemctl enable systemd-networkd.socket 2>/dev/null || true
+
     sudo netplan apply
+
+    progress_message "Verifying an address was obtained..."
+    for attempt in 1 2 3 4 5 6 7 8 9 10; do
+        if ip -4 -br addr show scope global | grep -qE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+'; then
+            ip -4 -br addr show scope global | sed 's/^/       /'
+            break
+        fi
+        [ "$attempt" = "10" ] && progress_message "WARNING: no IPv4 address yet. Check the cable and DHCP."
+        sleep 2
+    done
 elif systemctl is-active --quiet NetworkManager; then
     progress_message "NetworkManager is managing the network, configuring wired connections..."
     for dev in $(nmcli -t -f DEVICE,TYPE device | awk -F: '$2=="ethernet"{print $1}'); do
@@ -339,9 +367,33 @@ else
 fi
 progress_message "IPv6 disabled (kernel command line change takes effect after reboot)."
 
+step_message 13 "Verifying the collector survives a reboot"
+BOOT_OK="yes"
+for unit in systemd-networkd systemd-resolved snapd; do
+    if ! systemctl list-unit-files "$unit.service" >/dev/null 2>&1; then
+        continue
+    fi
+    state="$(systemctl is-enabled "$unit" 2>/dev/null || echo "not-found")"
+    case "$state" in
+        enabled|static|indirect|generated)
+            progress_message "$unit: $state" ;;
+        not-found)
+            progress_message "$unit: not installed, skipping" ;;
+        *)
+            progress_message "WARNING: $unit is '$state', which does not survive a reboot."
+            progress_message "         Fixing with: systemctl enable $unit"
+            sudo systemctl enable "$unit" || BOOT_OK="no" ;;
+    esac
+done
+if [ "$BOOT_OK" = "yes" ]; then
+    progress_message "Boot-time services look correct."
+fi
+
 echo "------------------------------------------------------------"
 echo "   [+] Setup completed successfully!"
 echo "   [+] Domotz agent web interface: http://$(hostname -I 2>/dev/null | awk '{print $1}'):3000"
+echo "   [!] Reboot once and confirm the board comes back on the network"
+echo "       before leaving it unattended."
 if [ "$auto_reboot" != "yes" ]; then
     echo "   [!] A reboot is required for the IPv6 kernel-level change to take effect."
 fi
