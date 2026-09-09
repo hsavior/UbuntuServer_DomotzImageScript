@@ -8,7 +8,7 @@ You will do three things:
 
 1. Write the installer image to an SD card.
 2. Let the board copy the operating system to its internal storage (eMMC).
-3. Run a setup script that installs and configures the Domotz agent.
+3. Run a setup script that installs and configures the Domotz Collector.
 
 ---
 
@@ -242,7 +242,7 @@ and only when an update actually requires one.
 The script runs for 10 to 20 minutes depending on how many updates are
 pending. It prints each step as it goes. Leave it running.
 
-When it finishes it prints the web address for the agent.
+When it finishes it prints the web address for the collector.
 
 ---
 
@@ -326,8 +326,8 @@ For reference, in the order it does them:
 3. Optionally enables automatic reboot after kernel updates
 4. Loads the `tun` kernel module, needed for remote connections
 5. Installs and prepares snapd
-6. Installs the Domotz Pro agent
-7. Grants the agent the permissions it needs
+6. Installs the Domotz Collector
+7. Grants the collector the permissions it needs
 8. Opens port 3000 in the firewall
 9. Sets all network ports to DHCP
 10. Adjusts DNS handling so VPN on Demand works correctly
