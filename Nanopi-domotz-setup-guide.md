@@ -30,9 +30,8 @@ over the network.
 | `Flash-NanoPiDomotz.ps1` | Windows | Writes the SD card and prepares it |
 | `flash-nanopi-domotz.sh` | macOS or Linux | The same thing, for Mac and Linux |
 
-Use the one that matches your computer. You do not need the other. The Windows
-section below downloads its script for you, so there is nothing to copy across
-by hand.
+Use the one that matches your computer. You do not need the other. Step 2
+downloads the right script for you, so there is nothing to copy across by hand.
 
 The setup script is not something you need to copy anywhere. The board
 downloads it itself in step 5.
@@ -120,10 +119,12 @@ fine; Windows simply cannot read the board's Linux partitions.
 
 ### macOS
 
-1. Open Terminal and change to the folder holding the scripts and the image.
-2. Make the script executable, once:
+1. Save the downloaded image in your Downloads folder.
+2. Open Terminal, then download the script and make it executable:
 
    ```
+   cd ~/Downloads
+   curl -O https://raw.githubusercontent.com/hsavior/UbuntuServer_DomotzImageScript/refs/heads/main/flash-nanopi-domotz.sh
    chmod +x flash-nanopi-domotz.sh
    ```
 
@@ -154,6 +155,8 @@ Identical to macOS, except the disk identifier looks like `/dev/sdb` or
 `/dev/mmcblk0`:
 
 ```
+cd ~/Downloads
+wget https://raw.githubusercontent.com/hsavior/UbuntuServer_DomotzImageScript/refs/heads/main/flash-nanopi-domotz.sh
 chmod +x flash-nanopi-domotz.sh
 ./flash-nanopi-domotz.sh -l
 ./flash-nanopi-domotz.sh -i rk3568-eflasher-ubuntu-noble-core-6.1-arm64-YYYYMMDD.img.gz -d /dev/sdb
