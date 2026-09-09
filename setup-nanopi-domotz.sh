@@ -24,6 +24,29 @@
 
 set -euo pipefail
 
+# This script is designed to be run either directly or piped straight from
+# curl into bash. When piped, the script itself occupies stdin, so a plain
+# "read" would swallow script text instead of waiting for the operator.
+# Reading from /dev/tty talks to the terminal regardless of how we were
+# started. Same reason sudo can still prompt for a password in a pipeline.
+if [ -r /dev/tty ]; then
+    exec 3</dev/tty
+else
+    echo "This script needs an interactive terminal and does not have one."
+    echo "Run it from a login shell, not from a cron job or a non-interactive"
+    echo "session."
+    exit 1
+fi
+
+ask() {
+    local prompt="$1" reply=""
+    # The prompt goes to stderr so it stays visible even though the caller
+    # captures our stdout in a command substitution.
+    printf '%s' "$prompt" >&2
+    read -r reply <&3 || reply=""
+    printf '%s' "$reply"
+}
+
 echo "------------------------------------------------------------"
 echo "This script will perform the following actions:"
 echo "1. Update System and install key packages"
@@ -42,14 +65,15 @@ echo "------------------------------------------------------------"
 echo "Disclaimer:"
 echo
 echo "1. Purpose: This script is designed for a fresh FriendlyELEC Ubuntu"
-echo "   Noble core arm64 image on an RK3568 board (NanoPi R5S / R5C)."
+echo "   Noble core arm64 image on a NanoPi R5S, R5C or R3S."
 echo "2. By proceeding, you confirm that:"
 echo "   - The script will modify system configurations and install necessary packages."
 echo "   - It may update system files and settings as per its instructions."
 echo "   - Using this script on an already configured system may lead to unexpected behavior."
 echo "3. Responsibility: You are responsible for any consequences resulting from running this script."
 echo
-read -r -p "Type 'yes' to proceed: " confirmation1
+confirmation1="$(ask "Type 'yes' to proceed: ")"
+echo
 if [ "$confirmation1" != "yes" ]; then
     echo "Confirmation not received. Exiting script."
     exit 1
@@ -57,7 +81,8 @@ fi
 echo "------------------------------------------------------------"
 
 echo "Please confirm again to proceed."
-read -r -p "Type 'yes' to proceed: " confirmation2
+confirmation2="$(ask "Type 'yes' to proceed: ")"
+echo
 if [ "$confirmation2" != "yes" ]; then
     echo "Confirmation not received. Exiting script."
     exit 1
@@ -115,7 +140,8 @@ echo "Recommended for an unattended site: the collector stays patched without"
 echo "anyone having to visit it. The reboot happens at 02:00, and only when an"
 echo "update actually requires one."
 echo
-read -r -p "Automatically reboot after kernel/security updates if required? (yes/no) [yes]: " auto_reboot
+auto_reboot="$(ask "Automatically reboot after kernel/security updates if required? (yes/no) [yes]: ")"
+echo
 auto_reboot="$(echo "${auto_reboot:-yes}" | tr '[:upper:]' '[:lower:]')"
 case "$auto_reboot" in
     y|yes) auto_reboot="yes" ;;
