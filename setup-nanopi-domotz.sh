@@ -25,7 +25,7 @@
 set -euo pipefail
 
 # This script is designed to be run either directly or piped straight from
-# curl into bash. When piped, the script itself occupies stdin, so a plain
+# wget into bash. When piped, the script itself occupies stdin, so a plain
 # "read" would swallow script text instead of waiting for the operator.
 # Reading from /dev/tty talks to the terminal regardless of how we were
 # started. Same reason sudo can still prompt for a password in a pipeline.
