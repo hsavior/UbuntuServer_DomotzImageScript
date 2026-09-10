@@ -277,6 +277,48 @@ required.
 
 ---
 
+## Optional: VLAN support
+
+Skip this section if the collector is plugged into a normal network port. It
+only matters on a trunk port.
+
+A collector on a trunk port sees only the untagged network, so devices on the
+tagged VLANs never get discovered. Configuring each VLAN by hand means editing
+network files over SSH on a machine you may not be able to reach if you get it
+wrong.
+
+[DynaVLAN](https://github.com/pereljon/dynavlan) is a third-party open-source
+tool that solves this. It detects the tagged VLANs present on the port, brings
+each one up with DHCP, and restarts the Collector so it discovers devices on
+all of them.
+
+To install it, log in to the collector and run:
+
+```
+wget -O- https://raw.githubusercontent.com/hsavior/UbuntuServer_DomotzImageScript/refs/heads/main/setup-dynavlan-domotz.sh | bash
+```
+
+It checks the prerequisites, installs DynaVLAN, and points it at the Domotz
+Collector so the collector restarts whenever VLANs change. Nothing about your
+network is changed while the script runs; DynaVLAN takes effect at the next
+boot.
+
+Settings live in `/etc/dynavlan.conf`, where every option is documented next to
+its default. Edit it with `sudo nano /etc/dynavlan.conf`; the original is saved
+as `/etc/dynavlan.conf.bak`.
+
+DynaVLAN uses DHCP on each VLAN. For static addresses, boot-time tuning and
+troubleshooting, see
+[Dynavlan-domotz-guide.md](Dynavlan-domotz-guide.md).
+
+Two things to know before installing it. Applying VLAN changes reconfigures the
+network and can briefly interrupt an SSH session, so the first boot afterwards
+is best done where you have physical access to the board. And DynaVLAN requires
+netplan 0.106 or newer; the script checks this and stops with an explanation
+rather than leaving a broken service behind.
+
+---
+
 ## Troubleshooting
 
 **The board never starts installing (SYS LED never flashes fast).**
