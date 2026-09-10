@@ -220,6 +220,27 @@ echo "       sudo dynavlan --boot"
 echo "   Be aware that this reconfigures the network and can drop your SSH"
 echo "   session. Do it with physical access to the board if you can."
 echo
+echo "   ----------------------------------------------------------"
+echo "   If you need static addresses on the VLANs"
+echo "   ----------------------------------------------------------"
+echo "   DynaVLAN is DHCP-only by design. Three ways to get stable"
+echo "   addresses, easiest first:"
+echo
+echo "   1. Add a DHCP reservation on each VLAN's DHCP server. The VLAN"
+echo "      interfaces share the parent's MAC, but each VLAN is its own"
+echo "      scope, so one reservation per scope works."
+echo
+echo "   2. Exclude specific VLANs from DynaVLAN using the ignore list in"
+echo "      /etc/dynavlan.conf, then define those yourself in your own"
+echo "      netplan file. DynaVLAN owns one generated file and leaves"
+echo "      every other netplan file alone."
+echo
+echo "   3. Skip DynaVLAN for known, fixed VLANs and write them by hand in"
+echo "      /etc/netplan/10-static-vlans.yaml."
+echo
+echo "   Full examples and the reasoning are in Dynavlan-domotz-guide.md:"
+echo "     https://github.com/hsavior/UbuntuServer_DomotzImageScript/blob/main/Dynavlan-domotz-guide.md"
+echo
 if [ "$COLLECTOR_PRESENT" = "no" ]; then
     echo "   [!] The Domotz Collector snap was not found on this system. Run"
     echo "       setup-nanopi-domotz.sh to install it."
