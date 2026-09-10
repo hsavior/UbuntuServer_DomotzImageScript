@@ -61,6 +61,7 @@ echo "9. Configure DHCP on all attached NICs"
 echo "10. Resolve VPN on Demand issue with DNS"
 echo "11. Disable cloud-init's network configuration (if cloud-init present)"
 echo "12. Disable IPv6 at the kernel level"
+echo "13. Verify the collector survives a reboot"
 echo "------------------------------------------------------------"
 echo "Disclaimer:"
 echo
@@ -112,7 +113,7 @@ sudo apt update
 progress_message "Upgrading packages..."
 sudo apt upgrade -y
 progress_message "Installing necessary packages..."
-sudo apt install -y net-tools ufw curl ca-certificates
+sudo apt install -y net-tools ufw curl ca-certificates nano
 
 step_message 2 "Enabling Unattended Security Updates"
 progress_message "Installing unattended-upgrades package..."
@@ -207,8 +208,46 @@ sudo ufw allow 3000/tcp
 
 step_message 9 "Configuring DHCP on attached NICs"
 if command -v netplan >/dev/null 2>&1 && [ -d /etc/netplan ]; then
-    progress_message "netplan detected, writing /etc/netplan/00-installer-config.yaml..."
-    sudo tee /etc/netplan/00-installer-config.yaml > /dev/null <<EOL
+    # Each interface gets its own stanza named after the interface, rather than
+    # one wildcard "match" stanza covering them all. Both configure DHCP the
+    # same way, but in netplan a VLAN's "link:" must name a DEFINITION ID, not
+    # a kernel interface. With a wildcard stanza the only ID is the matcher's
+    # own name, so anything adding VLANs later (DynaVLAN, or a hand-written
+    # config) fails with "interface 'eth0' is not defined". Naming each
+    # interface keeps that door open at no cost.
+    progress_message "Detecting physical network interfaces..."
+    NETPLAN_IFACES=""
+    for dev in /sys/class/net/*; do
+        [ -e "$dev" ] || continue
+        name="$(basename "$dev")"
+        # A real NIC has a device symlink; this skips lo, bridges, VLANs and
+        # other virtual interfaces.
+        [ -e "$dev/device" ] || continue
+        case "$name" in
+            eth*|en*) NETPLAN_IFACES="$NETPLAN_IFACES $name" ;;
+            *) continue ;;
+        esac
+    done
+
+    if [ -n "$NETPLAN_IFACES" ]; then
+        progress_message "Interfaces:$NETPLAN_IFACES"
+        progress_message "Writing /etc/netplan/00-installer-config.yaml..."
+        {
+            echo "network:"
+            echo "    version: 2"
+            echo "    ethernets:"
+            for name in $NETPLAN_IFACES; do
+                echo "        $name:"
+                echo "            dhcp4: true"
+                echo "            dhcp6: false"
+                echo "            accept-ra: false"
+                echo "            optional: true"
+            done
+        } | sudo tee /etc/netplan/00-installer-config.yaml > /dev/null
+    else
+        progress_message "No physical interfaces detected, falling back to wildcard matching."
+        progress_message "NOTE: VLAN tools such as DynaVLAN cannot attach to a wildcard stanza."
+        sudo tee /etc/netplan/00-installer-config.yaml > /dev/null <<EOL
 network:
     version: 2
     ethernets:
@@ -227,6 +266,7 @@ network:
             accept-ra: false
             optional: true
 EOL
+    fi
     sudo chmod 600 /etc/netplan/00-installer-config.yaml
     sudo rm -f /etc/netplan/50-cloud-init.yaml
 
@@ -261,7 +301,7 @@ EOL
 elif systemctl is-active --quiet NetworkManager; then
     progress_message "NetworkManager is managing the network, configuring wired connections..."
     for dev in $(nmcli -t -f DEVICE,TYPE device | awk -F: '$2=="ethernet"{print $1}'); do
-        con="$(nmcli -t -f NAME,DEVICE connection show --active | awk -F: -v d="$dev" '$2==d{print $1; exit}')"
+        con="$(nmcli -t -f NAME,DEVICE connection show --active | awk -F: -v d="$dev" '$2==d{print $1; exit}' || true)"
         if [ -z "$con" ]; then
             con="domotz-$dev"
             progress_message "Creating DHCP connection for $dev..."
@@ -394,6 +434,11 @@ echo "   [+] Setup completed successfully!"
 echo "   [+] Domotz Collector web interface: http://$(hostname -I 2>/dev/null | awk '{print $1}'):3000"
 echo "   [!] Reboot once and confirm the board comes back on the network"
 echo "       before leaving it unattended."
+echo
+echo "   Optional, only if this collector is on a trunk port carrying VLANs:"
+echo "   DynaVLAN brings each tagged VLAN up automatically so the Collector"
+echo "   discovers devices on all of them. Install it with:"
+echo "     wget -O- https://raw.githubusercontent.com/hsavior/UbuntuServer_DomotzImageScript/refs/heads/main/setup-dynavlan-domotz.sh | bash"
 if [ "$auto_reboot" != "yes" ]; then
     echo "   [!] A reboot is required for the IPv6 kernel-level change to take effect."
 fi
