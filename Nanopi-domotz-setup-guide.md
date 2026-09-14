@@ -239,6 +239,15 @@ wget -O- https://raw.githubusercontent.com/hsavior/UbuntuServer_DomotzImageScrip
 
 That is the whole installation. Copy and paste it exactly.
 
+If this collector is plugged into a **trunk port** carrying tagged VLANs, use
+this instead and it installs DynaVLAN in the same run:
+
+```
+wget -O- https://raw.githubusercontent.com/hsavior/UbuntuServer_DomotzImageScript/refs/heads/main/setup-nanopi-domotz.sh | bash -s -- --with-dynavlan
+```
+
+See "Optional: VLAN support" below if you are not sure which applies.
+
 The script explains what it will do and asks you to type `yes` twice. It then
 asks one question:
 
@@ -292,11 +301,14 @@ tool that solves this. It detects the tagged VLANs present on the port, brings
 each one up with DHCP, and restarts the Collector so it discovers devices on
 all of them.
 
-To install it, log in to the collector and run:
+To install it on a collector that is already set up, log in and run:
 
 ```
 wget -O- https://raw.githubusercontent.com/hsavior/UbuntuServer_DomotzImageScript/refs/heads/main/setup-dynavlan-domotz.sh | bash
 ```
+
+Or install everything in one run by adding `--with-dynavlan` to the step 5
+command, as shown there.
 
 It checks the prerequisites, installs DynaVLAN, and points it at the Domotz
 Collector so the collector restarts whenever VLANs change. Nothing about your
