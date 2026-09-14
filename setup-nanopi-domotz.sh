@@ -24,6 +24,36 @@
 
 set -euo pipefail
 
+DYNAVLAN_SCRIPT_URL="https://raw.githubusercontent.com/hsavior/UbuntuServer_DomotzImageScript/refs/heads/main/setup-dynavlan-domotz.sh"
+
+# Optional: install DynaVLAN in the same run, for a collector on a trunk port.
+#
+#   wget -O- <this script> | bash -s -- --with-dynavlan
+#   ./setup-nanopi-domotz.sh --with-dynavlan
+#
+# The DynaVLAN logic lives in its own script rather than being duplicated
+# here; this just chains to it at the end, once the network configuration it
+# depends on is in place.
+WITH_DYNAVLAN="no"
+for arg in "$@"; do
+    case "$arg" in
+        --with-dynavlan) WITH_DYNAVLAN="yes" ;;
+        -h|--help)
+            echo "Usage: $0 [--with-dynavlan]"
+            echo
+            echo "  --with-dynavlan   Also install DynaVLAN at the end of the run."
+            echo "                    Only useful when the collector is plugged into"
+            echo "                    a trunk port carrying tagged VLANs."
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $arg" >&2
+            echo "Usage: $0 [--with-dynavlan]" >&2
+            exit 1
+            ;;
+    esac
+done
+
 # This script is designed to be run either directly or piped straight from
 # wget into bash. When piped, the script itself occupies stdin, so a plain
 # "read" would swallow script text instead of waiting for the operator.
@@ -430,15 +460,37 @@ if [ "$BOOT_OK" = "yes" ]; then
 fi
 
 echo "------------------------------------------------------------"
-echo "   [+] Setup completed successfully!"
+echo "   [+] Collector setup completed successfully!"
 echo "   [+] Domotz Collector web interface: http://$(hostname -I 2>/dev/null | awk '{print $1}'):3000"
+echo "------------------------------------------------------------"
+
+if [ "$WITH_DYNAVLAN" = "yes" ]; then
+    echo
+    step_message 14 "Installing DynaVLAN (--with-dynavlan was requested)"
+    progress_message "Fetching $DYNAVLAN_SCRIPT_URL"
+    # DYNAVLAN_ASSUME_YES skips that script's own confirmation prompt, since
+    # asking to install DynaVLAN is exactly what --with-dynavlan already said.
+    if command -v curl >/dev/null 2>&1; then
+        curl -fsSL "$DYNAVLAN_SCRIPT_URL" | DYNAVLAN_ASSUME_YES=1 bash
+    else
+        wget -qO- "$DYNAVLAN_SCRIPT_URL" | DYNAVLAN_ASSUME_YES=1 bash
+    fi
+    echo
+    echo "------------------------------------------------------------"
+    echo "   [+] Collector and DynaVLAN are both installed."
+    echo "------------------------------------------------------------"
+fi
+
+echo
 echo "   [!] Reboot once and confirm the board comes back on the network"
 echo "       before leaving it unattended."
-echo
-echo "   Optional, only if this collector is on a trunk port carrying VLANs:"
-echo "   DynaVLAN brings each tagged VLAN up automatically so the Collector"
-echo "   discovers devices on all of them. Install it with:"
-echo "     wget -O- https://raw.githubusercontent.com/hsavior/UbuntuServer_DomotzImageScript/refs/heads/main/setup-dynavlan-domotz.sh | bash"
+if [ "$WITH_DYNAVLAN" != "yes" ]; then
+    echo
+    echo "   Optional, only if this collector is on a trunk port carrying VLANs:"
+    echo "   DynaVLAN brings each tagged VLAN up automatically so the Collector"
+    echo "   discovers devices on all of them. Install it with:"
+    echo "     wget -O- $DYNAVLAN_SCRIPT_URL | bash"
+fi
 if [ "$auto_reboot" != "yes" ]; then
     echo "   [!] A reboot is required for the IPv6 kernel-level change to take effect."
 fi
