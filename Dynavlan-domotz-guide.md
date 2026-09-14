@@ -22,10 +22,16 @@ nothing to do, and it adds several minutes to every boot while it looks.
 
 ## Installing
 
-On the collector:
+On a collector that is already set up:
 
 ```
 wget -O- https://raw.githubusercontent.com/hsavior/UbuntuServer_DomotzImageScript/refs/heads/main/setup-dynavlan-domotz.sh | bash
+```
+
+Or install the Collector and DynaVLAN together in a single run:
+
+```
+wget -O- https://raw.githubusercontent.com/hsavior/UbuntuServer_DomotzImageScript/refs/heads/main/setup-nanopi-domotz.sh | bash -s -- --with-dynavlan
 ```
 
 The script checks the prerequisites, installs DynaVLAN, and sets
