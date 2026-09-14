@@ -77,11 +77,18 @@ echo
 echo "DynaVLAN is third-party open-source software, not maintained by Domotz:"
 echo "  https://github.com/pereljon/dynavlan"
 echo
-confirmation="$(ask "Type 'yes' to proceed: ")"
-echo
-if [ "$confirmation" != "yes" ]; then
-    echo "Confirmation not received. Exiting script."
-    exit 1
+# DYNAVLAN_ASSUME_YES=1 skips the confirmation. setup-nanopi-domotz.sh sets it
+# when run with --with-dynavlan, because asking for DynaVLAN on the command
+# line is already the confirmation. Not intended for interactive use.
+if [ "${DYNAVLAN_ASSUME_YES:-0}" = "1" ]; then
+    echo "Proceeding automatically (DYNAVLAN_ASSUME_YES is set)."
+else
+    confirmation="$(ask "Type 'yes' to proceed: ")"
+    echo
+    if [ "$confirmation" != "yes" ]; then
+        echo "Confirmation not received. Exiting script."
+        exit 1
+    fi
 fi
 
 export DEBIAN_FRONTEND=noninteractive
